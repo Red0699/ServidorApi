@@ -54,13 +54,24 @@ const router = express.Router();
  *              description: la pelicula ha sido creada
  * 
  */
-router.post('/peliculas', (req,res) => {
-    const pelicula = peliculaSchema(req.body);
-    pelicula
-        .save()
-        .then((data) => res.json(data))
-        .catch((error) => res.json({ message: error }));
-});
+router.post('/peliculas', (req, res) => {
+    const data = {
+        idPelicula: null,
+        nombre: req.body.nombre,
+        descripcion: req.body.descripcion,
+        categoria: req.body.categoria,
+        director: req.body.director
+    };
+
+    //Funcion para insertar
+    peliculaSchema.insertPelicula(data, (error, data) => {
+        if (data) {
+            res.status(200).json(data);
+        } else {
+            res.status(500).send({ error: "=(" });
+        }
+    });
+})
 
 /**
  * @swagger
@@ -81,11 +92,10 @@ router.post('/peliculas', (req,res) => {
  */
 
 //obtener todas las peliculas
-router.get('/peliculas', (req,res) => {
-    peliculaSchema
-        .find()
-        .then((data) => res.json(data))
-        .catch((error) => res.json({ message: error }));
+router.get('/peliculas', (req, res) => {
+    peliculaSchema.getPeliculas(function (error, data) {
+        res.status(200).json(data);
+    });
 });
 
 /**
@@ -98,7 +108,7 @@ router.get('/peliculas', (req,res) => {
  *          - in: path
  *            name: id
  *            schema:
- *              type: string
+ *              type: integer
  *            required: true
  *            description: El ID de la pelicula
  *      responses:
@@ -114,12 +124,21 @@ router.get('/peliculas', (req,res) => {
  */
 
 //obtener pelicula
-router.get('/peliculas/:id', (req,res) => {
-    const { id } = req.params
-    peliculaSchema
-        .findById(id)
-        .then((data) => res.json(data))
-        .catch((error) => res.json({ message: error }));
+router.get('/peliculas/:id', (req, res) => {
+    const id = req.params.id;
+
+    if (!isNaN(id)) {
+        peliculaSchema.getPelicula(id, (error, data) => {
+            if (typeof data !== 'undefined' && data.length > 0) {
+                res.status(200).json(data);
+            } else {
+                res.status(404, { "msg": "El registro no existe" });
+            }
+        })
+    } else {
+        res.status(500).json({ "msg": "Debe ser un numero" });
+    }
+
 });
 
 /**
@@ -132,7 +151,7 @@ router.get('/peliculas/:id', (req,res) => {
  *          - in: path
  *            name: id
  *            schema:
- *              type: string
+ *              type: integer
  *            required: true
  *            description: El ID de la pelicula
  *      requestBody:
@@ -150,14 +169,29 @@ router.get('/peliculas/:id', (req,res) => {
  */
 
 //actualizar pelicula
-router.put('/peliculas/:id', (req,res) => {
-    const { id } = req.params
-    const { nombre,descripcion, categoria, director } = req.body
-    peliculaSchema
-        .updateOne({ _id: id }, { $set: { nombre,descripcion, categoria, director } })
-        .then((data) => res.json(data))
-        .catch((error) => res.json({ message: error }));
-});
+router.put('/peliculas/:id', (req, res) => {
+    const id = req.params.id;
+
+    const data = {
+        idPelicula: null,
+        nombre: req.body.nombre,
+        descripcion: req.body.descripcion,
+        categoria: req.body.categoria,
+        director: req.body.director
+    };
+
+    if (!isNaN(id)) {
+        peliculaSchema.updatePelicula(id, data, function (error, data) {
+            if (data && data.msg) {
+                res.status(200).json(data);
+            } else {
+                res.status(500).send({ error: "=(" })
+            }
+        })
+    } else {
+        res.status(500).json({ "msg": "Debe ingresar un numero" })
+    }
+})
 
 /**
  * @swagger
@@ -169,7 +203,7 @@ router.put('/peliculas/:id', (req,res) => {
  *          - in: path
  *            name: id
  *            schema:
- *              type: string
+ *              type: integer
  *            required: true
  *            description: El ID de la pelicula
  *      responses:
@@ -180,12 +214,31 @@ router.put('/peliculas/:id', (req,res) => {
  */
 
 //eliminar pelicula
-router.delete('/peliculas/:id', (req,res) => {
+
+router.delete('/peliculas/:id', (req, res) => {
+    const id = req.params.id;
+
+    if (!isNaN(id)) {
+        peliculaSchema.deletePelicula(id, (error, data) => {
+            if (typeof data !== 'undefined' && data.length > 0) {
+                res.status(200).json(data);
+            } else {
+                res.status(404, { "msg": "El registro no existe" });
+            }
+        })
+    } else {
+        res.status(500).json({ "msg": "Debe ser un numero" });
+    }
+
+})
+
+/*
+router.delete('/peliculas/:id', (req, res) => {
     const { id } = req.params
     peliculaSchema
         .remove({ _id: id })
         .then((data) => res.json(data))
         .catch((error) => res.json({ message: error }));
 });
-
+*/
 module.exports = router;

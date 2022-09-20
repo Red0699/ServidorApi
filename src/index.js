@@ -1,10 +1,11 @@
 const express = require('express');
-const mongoose = require('mongoose');
 require("dotenv").config();
 const app = express();
-const port = process.env.PORT || 5000;
-const peliculasRoutes = require('./routes/peliculas');
+const port = process.env.PORT || 3000;
 const path = require("path");
+
+//rutas
+const peliculasRoutes = require('./routes/peliculas');
 
 //cors
 const cors = require("cors");
@@ -21,7 +22,7 @@ const swaggerSpec = {
         },
         servers: [
             {
-                url: "http://192.168.20.29:5000"
+                url: "http://localhost:3000"
             }
         ]
     },
@@ -39,15 +40,15 @@ app.get('/', (req,res) => {
 });
 
 
+
 app.use(cors({
-    origin: 'http://localhost:3000'
+    origin: 'http://192.168.20.29:4200',
+    origin: ''
 }));
 
 
-//conexion mongoose
-mongoose
-.connect(process.env.MONGODB_URI)
-.then(() => console.log('Conectado a MongoDB Atlas'))
-.catch((error) => console.error(error));
+//app.use(cors());
+
+
 
 app.listen(port, () => console.log('Servidor escuchando en', port));
