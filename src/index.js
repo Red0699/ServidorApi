@@ -40,14 +40,14 @@ app.get('/', (req,res) => {
 });
 
 
-
+/*
 app.use(cors({
-    origin: 'http://192.168.20.29:4200',
+    //origin: 'http://192.168.20.29:4200',
     origin: ''
 }));
+*/
 
-
-//app.use(cors());
+app.use(cors());
 
 
 
